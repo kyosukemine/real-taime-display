@@ -20,7 +20,7 @@ win.setWindowTitle('pyqtgraph example: Plotting')
 pg.setConfigOptions(antialias=True)
 
 p6 = win.addPlot(title="Updating plot")
-curve = p6.plot(pen='b')
+curve = p6.plot(pen='black')
 data = np.random.normal(size=(10, 1000))
 ptr = 0
 data = np.zeros([100])
@@ -34,18 +34,18 @@ now = time()
 def update():
     global curve, data, ptr, p6, now, old
     now = time()
-    curve.setData(np.sin(x+ptr*0.1))
+    curve.setData(np.sin(x+ptr*.1))
     if ptr == 0:
         p6.enableAutoRange('xy', False)  # stop auto-scaling after the first data set is plotted
     ptr += 1
-    if ptr % 10 == 0:
-        p6.setTitle((now-old)*1000)
+    # if ptr % 10 == 0:
+    p6.setTitle((now-old)*1000)
     old = now
 
 
 timer = QtCore.QTimer()
 timer.timeout.connect(update)
-timer.start(10)
+timer.start(1)
 
 
 if __name__ == '__main__':
