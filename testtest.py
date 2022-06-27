@@ -176,35 +176,37 @@ cnt = int()
 # ----------------------------------------
 # グラフウィンドウ作成
 # ----------------------------------------
-pg.setConfigOption('background', 'w')
-pg.setConfigOption('foreground', 'k')
+# pg.setConfigOption('background', 'w')
+# pg.setConfigOption('foreground', 'k')
 
-app = pg.mkQApp("Plotting Example")
-# mw = QtWidgets.QMainWindow()
-# mw.resize(800,800)
+# app = pg.mkQApp("Plotting Example")
+# # mw = QtWidgets.QMainWindow()
+# # mw.resize(800,800)
 
-win = pg.GraphicsLayoutWidget(show=True, title="Basic plotting examples")
-win.resize(1000, 600)
-win.setWindowTitle('pyqtgraph example: Plotting')
+# win = pg.GraphicsLayoutWidget(show=True, title="Basic plotting examples")
+# win.resize(1000, 600)
+# win.setWindowTitle('pyqtgraph example: Plotting')
 
-# Enable antialiasing for prettier plots
-pg.setConfigOptions(antialias=True)
+# # Enable antialiasing for prettier plots
+# pg.setConfigOptions(antialias=True)
 
-for i in range(AiChannels):
-    p = win.addPlot(title=f"[{i}]real-time plot")
-    curve = p.plot(pen='black')
-    P.append(p)
-    curves.append(curve)
-
-    win.nextRow()
+# for i in range(AiChannels):
+#     p = win.addPlot(title=f"[{i}]real-time plot")
+#     curve = p.plot(pen='black')
+#     P.append(p)
+#     curves.append(curve)
 
 
-TIMERANGE = 1 * 1000
-cnt = 0
-V = [np.empty(0) for i in range(AiChannels)]
+#     win.nextRow()
 
-AiDataType = ctypes.c_float * (AiSamplingTimes*AiChannels)               # 配列タイプを作成(変換データ)
-AiData = AiDataType()                           # 変換データ
+
+# TIMERANGE = 1 * 1000
+# cnt = 0
+# V = [np.empty(0) for i in range(AiChannels)]
+
+# AiDataType = ctypes.c_float * (AiSamplingTimes*AiChannels)               # 配列タイプを作成(変換データ)
+# AiData = AiDataType()                           # 変換データ
+
 
 def update():
     global curves, T, V, cnt, AiChannels, now, old, start, AiSamplingCount
@@ -266,7 +268,7 @@ try:
 
     timer = QtCore.QTimer()
     timer.timeout.connect(update)
-    timer.start(1000)
+    timer.start(10)
     pg.exec()
     print(V)
     # ----------------------------------------
