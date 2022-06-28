@@ -12,10 +12,11 @@ import sys
 import caio
 import keyboard
 import numpy as np
-import pyqtgraph as pg
-from pyqtgraph.Qt import QtCore
+# import pyqtgraph as pg
+# from pyqtgraph.Qt import QtCore
 from time import time
-
+import faulthandler
+faulthandler.enable()
 # ================================================================
 # 文字列を数値に変換できるかどうか確認する関数
 # ================================================================
@@ -137,6 +138,7 @@ while True:
         continue
     AiChannels = int(buf)
     break
+# AiChannels = 4
 if (AiChannels < 1) or (AiChannels > MaxAiChannels.value):
     print("\nチャネル数が設定可能範囲外です\n")
     caio.AioExit(aio_id)
@@ -204,47 +206,9 @@ cnt = int()
 # cnt = 0
 # V = [np.empty(0) for i in range(AiChannels)]
 
-# AiDataType = ctypes.c_float * (AiSamplingTimes*AiChannels)               # 配列タイプを作成(変換データ)
-# AiData = AiDataType()                           # 変換データ
-
-
-def update():
-    global curves, T, V, cnt, AiChannels, now, old, start, AiSamplingCount
-    # now = time()
-    lret.value = caio.AioGetAiSamplingCount(aio_id, AiSamplingCount)
-    if lret.value != 0:
-        caio.AioGetErrorString(lret, err_str)
-        print(f"AioGetAiSamplingCount = {lret.value} : {err_str.value.decode('sjis')}")
-        caio.AioExit(aio_id)
-        sys.exit()
-
-    print(AiSamplingCount.value)
-    if AiSamplingCount.value >= AiSamplingTimes*AiChannels:
-        cnt += AiSamplingTimes
-        lret.value = caio.AioGetAiSamplingDataEx(aio_id, ctypes.c_long(AiSamplingTimes*AiChannels), AiData)
-        if lret.value != 0:
-            caio.AioGetErrorString(lret, err_str)
-            print(f"AioMultiAiEx = {lret.value} : {err_str.value.decode('sjis')}")
-            caio.AioExit(aio_id)
-            sys.exit()
-        for i in range(AiChannels):
-            # print(AiData[i::AiChannels])
-            # print(len(V[i]))
-            npAiData = np.array(AiData)
-            V[i] = np.append(V[i], npAiData[i::AiChannels])
-            curves[i].setData(V[i][max(0, cnt - TIMERANGE):])
-            # curves[i].setData(V[i])
-
-    # cnt += 1
-    # if cnt % 10 == 0:
-    #     print(cnt)
-    # print(len(V[0]))
-    # P[0].setTitle((now-old)*1000)
-    # caio.AioExit(aio_id)
-    # sys.exit()
-    # old = now
-
-
+AiDataType = ctypes.c_float * (AiSamplingTimes*AiChannels*10)               # 配列タイプを作成(変換データ)
+AiData = AiDataType()                           # 変換データ
+# AiData = ctypes.c_long()
 # ----------------------------------------
 # サンプリングスタート
 # ----------------------------------------
@@ -261,31 +225,43 @@ if lret.value != 0:
     caio.AioExit(aio_id)
     sys.exit()
 
+# def update():
+#     global curves, T, V, cnt, AiChannels, now, old, start, AiSamplingCount
+#     # now = time()
 try:
-    start = time()
-    old = time()
-    now = time()
+    while True:
+            lret.value = caio.AioGetAiSamplingCount(aio_id, AiSamplingCount)
+            if lret.value != 0:
+                caio.AioGetErrorString(lret, err_str)
+                print(f"AioGetAiSamplingCount = {lret.value} : {err_str.value.decode('sjis')}")
+                caio.AioExit(aio_id)
+                sys.exit()
 
-    timer = QtCore.QTimer()
-    timer.timeout.connect(update)
-    timer.start(10)
-    pg.exec()
-    print(V)
-    # ----------------------------------------
-    # デバイスの終了
-    # ----------------------------------------
-    lret.value = caio.AioStopAi(aio_id)
-    if lret.value != 0:
-        caio.AioGetErrorString(lret, err_str)
-        print(f"AioExit = {lret.value} : {err_str.value.decode('sjis')}")
-        sys.exit()
+            print(AiSamplingCount.value)
+            if AiSamplingCount.value >= AiSamplingTimes:
+                cnt += AiSamplingTimes
+                lret.value = caio.AioGetAiSamplingDataEx(aio_id, ctypes.c_long(AiSamplingTimes), AiData)
+                if lret.value != 0:
+                    caio.AioGetErrorString(lret, err_str)
+                    print(f"AioMultiAiEx = {lret.value} : {err_str.value.decode('sjis')}")
+                    caio.AioExit(aio_id)
+                    sys.exit()
+                # for i in range(AiChannels):
+                    # print(AiData[i::AiChannels])
+                    # print(len(V[i]))
+                    # npAiData = np.array(AiData)
+                    # V[i] = np.append(V[i], npAiData[i::AiChannels])
+                    # curves[i].setData(V[i][max(0, cnt - TIMERANGE):])
+                    # curves[i].setData(V[i])
 
-    lret.value = caio.AioExit(aio_id)
-    if lret.value != 0:
-        caio.AioGetErrorString(lret, err_str)
-        print(f"AioExit = {lret.value} : {err_str.value.decode('sjis')}")
-        sys.exit()
-    sys.exit()
+        # cnt += 1
+        # if cnt % 10 == 0:
+        #     print(cnt)
+        # print(len(V[0]))
+        # P[0].setTitle((now-old)*1000)
+        # caio.AioExit(aio_id)
+        # sys.exit()
+        # old = now
 except KeyboardInterrupt:
 
     # ----------------------------------------
@@ -303,6 +279,51 @@ except KeyboardInterrupt:
         print(f"AioExit = {lret.value} : {err_str.value.decode('sjis')}")
         sys.exit()
     sys.exit()
+
+
+
+# try:
+#     start = time()
+#     old = time()
+#     now = time()
+
+#     timer = QtCore.QTimer()
+#     timer.timeout.connect(update)
+#     timer.start(10)
+#     pg.exec()
+#     print(V)
+#     # ----------------------------------------
+#     # デバイスの終了
+#     # ----------------------------------------
+#     lret.value = caio.AioStopAi(aio_id)
+#     if lret.value != 0:
+#         caio.AioGetErrorString(lret, err_str)
+#         print(f"AioExit = {lret.value} : {err_str.value.decode('sjis')}")
+#         sys.exit()
+
+#     lret.value = caio.AioExit(aio_id)
+#     if lret.value != 0:
+#         caio.AioGetErrorString(lret, err_str)
+#         print(f"AioExit = {lret.value} : {err_str.value.decode('sjis')}")
+#         sys.exit()
+#     sys.exit()
+# except KeyboardInterrupt:
+
+#     # ----------------------------------------
+#     # デバイスの終了
+#     # ----------------------------------------
+#     lret.value = caio.AioStopAi(aio_id)
+#     if lret.value != 0:
+#         caio.AioGetErrorString(lret, err_str)
+#         print(f"AioExit = {lret.value} : {err_str.value.decode('sjis')}")
+#         sys.exit()
+
+#     lret.value = caio.AioExit(aio_id)
+#     if lret.value != 0:
+#         caio.AioGetErrorString(lret, err_str)
+#         print(f"AioExit = {lret.value} : {err_str.value.decode('sjis')}")
+#         sys.exit()
+#     sys.exit()
 
 # print("if keyboard.read_key() == q:break")
 # while True:

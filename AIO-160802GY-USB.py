@@ -39,9 +39,10 @@ err_str = ctypes.create_string_buffer(256)      # エラー文字列
 lret = ctypes.c_long()                          # 関数の戻り値
 aio_id = ctypes.c_short()                       # ID
 device_name = ctypes.create_string_buffer(50)   # デバイス名
-device_name = "AIO001"
+device_name = "AIO000"
 AiSamplingCount = ctypes.c_long(0)
 MaxAiChannels = ctypes.c_short()                # 最大チャネル数
+AiSamplingClock = 1000  # μsec
 AiSamplingTimes = 100
 AiChannels = int()
 P = []
@@ -142,7 +143,8 @@ if (AiChannels < 1) or (AiChannels > MaxAiChannels.value):
     caio.AioExit(aio_id)
     sys.exit()
 
-lret.value = caio.AioSetAiChannels(aio_id, AiChannels)
+
+lret.value = caio.AioSetAiChannels(aio_id, ctypes.c_short(AiChannels))
 if lret.value != 0:
     caio.AioGetErrorString(lret, err_str)
     print(f"AioSetAiChannels = {lret.value} : {err_str.value.decode('sjis')}")
@@ -158,7 +160,7 @@ if lret.value != 0:
     print(f"AioSetAiClockType = {lret.value} : {err_str.value.decode('sjis')}")
     caio.AioExit(aio_id)
     sys.exit()
-lret.value = caio.AioSetAiSamplingClock(aio_id, 1000)  # μsec
+lret.value = caio.AioSetAiSamplingClock(aio_id, AiSamplingClock)  # μsec
 if lret.value != 0:
     caio.AioGetErrorString(lret, err_str)
     print(f"AioSetAiSamplingClock = {lret.value} : {err_str.value.decode('sjis')}")
@@ -193,21 +195,26 @@ pg.setConfigOptions(antialias=True)
 for i in range(AiChannels):
     p = win.addPlot(title=f"[{i}]real-time plot")
     curve = p.plot(pen='black')
+    p.setRange(yRange=(-2, 2))
     P.append(p)
     curves.append(curve)
 
     win.nextRow()
 
 
-TIMERANGE = 1 * 1000
+TIMERANGE = 10 * 1000
 cnt = 0
 V = [np.empty(0) for i in range(AiChannels)]
 
 AiDataType = ctypes.c_float * (AiSamplingTimes*AiChannels)               # 配列タイプを作成(変換データ)
-AiData = AiDataType()                           # 変換データ
+# print(AiDataType)
+# sys.exit()
+AiData = AiDataType()                            # 変換データ
+ptr = 0
+
 
 def update():
-    global curves, T, V, cnt, AiChannels, now, old, start, AiSamplingCount
+    global curves, T, V, cnt, AiChannels, now, old, start, AiSamplingCount, ptr, AiDatalist
     # now = time()
     lret.value = caio.AioGetAiSamplingCount(aio_id, AiSamplingCount)
     if lret.value != 0:
@@ -217,9 +224,16 @@ def update():
         sys.exit()
 
     print(AiSamplingCount.value)
-    if AiSamplingCount.value >= AiSamplingTimes*AiChannels:
+    if AiSamplingCount.value >= AiSamplingTimes:
         cnt += AiSamplingTimes
-        lret.value = caio.AioGetAiSamplingDataEx(aio_id, ctypes.c_long(AiSamplingTimes*AiChannels), AiData)
+        # print(AiSamplingTimes*AiChannels)
+        # print(len(AiData))
+        # print(len(V[0]))
+        lret.value = caio.AioGetAiSamplingDataEx(aio_id, ctypes.c_long(AiSamplingTimes), AiData)
+        # lret.value = caio.AioGetAiSamplingDataEx(aio_id, ctypes.c_long(400), AiData)
+        # pg.plot(np.array(AiData))
+
+        # sys.exit()
         if lret.value != 0:
             caio.AioGetErrorString(lret, err_str)
             print(f"AioMultiAiEx = {lret.value} : {err_str.value.decode('sjis')}")
@@ -229,9 +243,10 @@ def update():
             # print(AiData[i::AiChannels])
             # print(len(V[i]))
             npAiData = np.array(AiData)
-            V[i] = np.append(V[i], npAiData[i::AiChannels])
+            V[i] = np.append(V[i], npAiData[i::AiChannels])  # AiSamplingTimes*AiChannels+i+1
             curves[i].setData(V[i][max(0, cnt - TIMERANGE):])
             # curves[i].setData(V[i])
+        ptr += 1
 
     # cnt += 1
     # if cnt % 10 == 0:
@@ -266,7 +281,7 @@ try:
 
     timer = QtCore.QTimer()
     timer.timeout.connect(update)
-    timer.start(1000)
+    timer.start(1)
     pg.exec()
     print(V)
     # ----------------------------------------
