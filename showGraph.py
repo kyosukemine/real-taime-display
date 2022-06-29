@@ -22,7 +22,7 @@ import threading
 # ================================================================
 
 
-class MyApp():
+class main():
     def __init__(self):
         self.AIO = AIO_160802GY_USB.AIO_160802GY_USB("AIO001", 6)
         self.V = [np.empty(0) for i in range(self.AIO.AiChannels)]
@@ -129,4 +129,4 @@ class MyApp():
 
 
 if __name__ == '__main__':
-    m = MyApp()
+    m = main()
