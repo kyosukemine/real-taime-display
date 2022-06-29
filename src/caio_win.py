@@ -1,29 +1,29 @@
-#================================================================
+# ================================================================
 # caio.py
 # module file for CONTEC Analog I/O device
 #                                                CONTEC.Co., Ltd.
-#================================================================
+# ================================================================
 import ctypes
 import ctypes.wintypes
 
 caio_dll = ctypes.windll.LoadLibrary('caio.dll')
 
 
-#----------------------------------------
+# ----------------------------------------
 # Type definition
-#----------------------------------------
-#----------------------------------------
+# ----------------------------------------
+# ----------------------------------------
 # External Control Signal
-#----------------------------------------
+# ----------------------------------------
 AIO_AIF_CLOCK = 0               # Analog input external clock
 AIO_AIF_START = 1               # Analog input external start trigger
 AIO_AIF_STOP = 2                # Analog input external stop trigger
 AIO_AOF_CLOCK = 3               # Analog output external clock
 AIO_AOF_START = 4               # Analog output external start trigger
 AIO_AOF_STOP = 5                # Analog output external stop trigger
-#----------------------------------------
+# ----------------------------------------
 # Input/Output Range
-#----------------------------------------
+# ----------------------------------------
 PM10 = 0                        # +/-10V
 PM5 = 1                         # +/-5V
 PM25 = 2                        # +/-2.5V
@@ -56,9 +56,9 @@ P20MA = 100                     # 0 ~ 20mA
 P4TO20MA = 101                  # 4 ~ 20mA
 PM20MA = 102                    # +/-20mA
 P1TO5 = 150                     # 1 ~ 5V
-#----------------------------------------
+# ----------------------------------------
 # Analog Input Event
-#----------------------------------------
+# ----------------------------------------
 AIE_START = 0x00000002          # Event that AD converting start conditions are satisfied
 AIE_RPTEND = 0x00000010         # Event of repeat end
 AIE_END = 0x00000020            # Event of device operation end
@@ -67,9 +67,9 @@ AIE_DATA_TSF = 0x00000100       # Event that data of the specified number are tr
 AIE_OFERR = 0x00010000          # Event of Overflow
 AIE_SCERR = 0x00020000          # Event of sampling clock error
 AIE_ADERR = 0x00040000          # Event of AD converting error
-#----------------------------------------
+# ----------------------------------------
 # Analog Output Event
-#----------------------------------------
+# ----------------------------------------
 AOE_START = 0x00000002          # Event that DA converting start conditions are satisfied
 AOE_RPTEND = 0x00000010         # Event of repeat end
 AOE_END = 0x00000020            # Event of device operation end
@@ -77,19 +77,19 @@ AOE_DATA_NUM = 0x00000080       # Event that data of the specified sampling time
 AOE_DATA_TSF = 0x00000100       # Event that data of the specified number are transferred
 AOE_SCERR = 0x00020000          # Event of sampling clock error
 AOE_DAERR = 0x00040000          # Event of DA converting error
-#----------------------------------------
+# ----------------------------------------
 # Counter Event
-#----------------------------------------
+# ----------------------------------------
 CNTE_DATA_NUM = 0x00000010      # Event of count comparison match
 CNTE_ORERR = 0x00010000         # Event of count overrun
 CNTE_ERR = 0x00020000           # Counter operating error
-#----------------------------------------
-# Timer Event 
-#----------------------------------------
+# ----------------------------------------
+# Timer Event
+# ----------------------------------------
 TME_INT = 0x00000001            # Event that interval is satisfied
-#----------------------------------------
+# ----------------------------------------
 # Analog Input Status
-#----------------------------------------
+# ----------------------------------------
 AIS_BUSY = 0x00000001           # Device is working
 AIS_START_TRG = 0x00000002      # Wait the start trigger
 AIS_DATA_NUM = 0x00000010       # Store the data of the specified number of samplings
@@ -97,25 +97,25 @@ AIS_OFERR = 0x00010000          # Overflow
 AIS_SCERR = 0x00020000          # Sampling clock error
 AIS_AIERR = 0x00040000          # AD converting error
 AIS_DRVERR = 0x00080000         # Driver spec error
-#----------------------------------------
+# ----------------------------------------
 # Analog Output Status
-#----------------------------------------
+# ----------------------------------------
 AOS_BUSY = 0x00000001           # Device is working
 AOS_START_TRG = 0x00000002      # Wait the start trigger
 AOS_DATA_NUM = 0x00000010       # Output the data of the specified number of samplings
 AOS_SCERR = 0x00020000          # Sampling clock error
 AOS_AOERR = 0x00040000          # DA converting error
 AOS_DRVERR = 0x00080000         # Driver spec error
-#----------------------------------------
-# Counter Status 
-#----------------------------------------
+# ----------------------------------------
+# Counter Status
+# ----------------------------------------
 CNTS_BUSY = 0x00000001          # Counter is working
 CNTS_DATA_NUM = 0x00000010      # Count comparison match
 CNTS_ORERR = 0x00010000         # Overrun
 CNTS_ERR = 0x00020000           # Count operating error
-#----------------------------------------
+# ----------------------------------------
 # Analog Input Message
-#----------------------------------------
+# ----------------------------------------
 AIOM_AIE_START = 0x1000         # Event that AD converting start condition are satisfied
 AIOM_AIE_RPTEND = 0x1001        # Event of repeat end
 AIOM_AIE_END = 0x1002           # Event of device operation end
@@ -124,9 +124,9 @@ AIOM_AIE_DATA_TSF = 0x1007      # Event that data of the specified number are tr
 AIOM_AIE_OFERR = 0x1004         # Event of Overflow
 AIOM_AIE_SCERR = 0x1005         # Event of sampling clock error
 AIOM_AIE_ADERR = 0x1006         # Event of AD converting error
-#----------------------------------------
+# ----------------------------------------
 # Analog Output Message
-#----------------------------------------
+# ----------------------------------------
 AIOM_AOE_START = 0x1020         # Event that DA converting start conditions are satisfied
 AIOM_AOE_RPTEND = 0x1021        # Event of repeat end
 AIOM_AOE_END = 0x1022           # Event of device operation end
@@ -134,32 +134,32 @@ AIOM_AOE_DATA_NUM = 0x1023      # Event that data of the specified sampling time
 AIOM_AOE_DATA_TSF = 0x1027      # Event that data of the specified number are transferred
 AIOM_AOE_SCERR = 0x1025         # Event of sampling clock error
 AIOM_AOE_DAERR = 0x1026         # Event of DA converting error
-#----------------------------------------
+# ----------------------------------------
 # Counter Message
-#----------------------------------------
+# ----------------------------------------
 AIOM_CNTE_DATA_NUM = 0x1042     # Event of count comparison match
 AIOM_CNTE_ORERR = 0x1043        # Event of count overrun
 AIOM_CNTE_ERR = 0x1044          # Event of counter operating error
-#----------------------------------------
+# ----------------------------------------
 # Timer Message
-#----------------------------------------
+# ----------------------------------------
 AIOM_TME_INT = 0x1060           # Event that interval is satisfied
-#----------------------------------------
+# ----------------------------------------
 # Analog Input Attached Data
-#----------------------------------------
+# ----------------------------------------
 AIAT_AI = 0x00000001            # Analog input attached information
 AIAT_AO0 = 0x00000100           # Analong output data
 AIAT_DIO0 = 0x00010000          # Digital input and output data
 AIAT_CNT0 = 0x01000000          # Data of counter channel 0
 AIAT_CNT1 = 0x02000000          # Data of counter channel 1
-#----------------------------------------
+# ----------------------------------------
 # Counter Action Mode
-#----------------------------------------
+# ----------------------------------------
 CNT_LOADPRESET = 0x0000001      # Load the preset count value
 CNT_LOADCOMP = 0x0000002        # Load the count comparison value
-#----------------------------------------
+# ----------------------------------------
 # Event Controller Destination Signal
-#----------------------------------------
+# ----------------------------------------
 AIOECU_DEST_AI_CLK = 4          # Analog input sampling clock
 AIOECU_DEST_AI_START = 0        # Analog input converting start signal
 AIOECU_DEST_AI_STOP = 2         # Analog input converting stop signal
@@ -175,9 +175,9 @@ AIOECU_DEST_CNT1_STOP = 131     # Stop signal of counter 1, timer 1
 AIOECU_DEST_MASTER1 = 104       # Synchronization bus master signal 1
 AIOECU_DEST_MASTER2 = 105       # Synchronization bus master signal 2
 AIOECU_DEST_MASTER3 = 106       # Synchronization bus master signal 3
-#----------------------------------------
+# ----------------------------------------
 # Event Controller Source Signal
-#----------------------------------------
+# ----------------------------------------
 AIOECU_SRC_OPEN = -1            # Not connect
 AIOECU_SRC_AI_CLK = 4           # Analog input internal clock signal
 AIOECU_SRC_AI_EXTCLK = 146      # Analog input external clock signal
@@ -202,9 +202,9 @@ AIOECU_SRC_SLAVE2 = 137         # Synchronization bus master signal 2
 AIOECU_SRC_SLAVE3 = 138         # Synchronization bus master signal 3
 AIOECU_SRC_START = 384          # Ai, Ao, Cnt, Tm software start signal
 AIOECU_SRC_STOP = 385           # Ai, Ao, Cnt, Tm software stop signal
-#----------------------------------------
+# ----------------------------------------
 # M Device Counter Message
-#----------------------------------------
+# ----------------------------------------
 AIOM_CNTM_COUNTUP_CH0 = 0x1070      # COUNTUP, CHANNEL No.0
 AIOM_CNTM_COUNTUP_CH1 = 0x1071      # COUNTUP, CHANNEL No.1
 AIOM_CNTM_TIME_UP = 0x1090          # Timer
@@ -212,41 +212,41 @@ AIOM_CNTM_COUNTER_ERROR = 0x1091    # Counter error
 AIOM_CNTM_CARRY_BORROW = 0x1092     # Carry/Borrow
 
 
-#----------------------------------------
+# ----------------------------------------
 # Types for callback function.
-#----------------------------------------
+# ----------------------------------------
 PAIO_AI_CALLBACK = ctypes.WINFUNCTYPE(None,
-                                       ctypes.c_short, ctypes.c_short, ctypes.wintypes.WPARAM,
-                                       ctypes.wintypes.LPARAM, ctypes.c_void_p)
+                                      ctypes.c_short, ctypes.c_short, ctypes.wintypes.WPARAM,
+                                      ctypes.wintypes.LPARAM, ctypes.c_void_p)
 PAIO_AO_CALLBACK = ctypes.WINFUNCTYPE(None,
-                                       ctypes.c_short, ctypes.c_short, ctypes.wintypes.WPARAM,
-                                       ctypes.wintypes.LPARAM, ctypes.c_void_p)
+                                      ctypes.c_short, ctypes.c_short, ctypes.wintypes.WPARAM,
+                                      ctypes.wintypes.LPARAM, ctypes.c_void_p)
 PAIO_CNT_CALLBACK = ctypes.WINFUNCTYPE(None,
                                        ctypes.c_short, ctypes.c_short, ctypes.wintypes.WPARAM,
                                        ctypes.wintypes.LPARAM, ctypes.c_void_p)
 PAIO_TM_CALLBACK = ctypes.WINFUNCTYPE(None,
-                                       ctypes.c_short, ctypes.c_short, ctypes.wintypes.WPARAM,
-                                       ctypes.wintypes.LPARAM, ctypes.c_void_p)
+                                      ctypes.c_short, ctypes.c_short, ctypes.wintypes.WPARAM,
+                                      ctypes.wintypes.LPARAM, ctypes.c_void_p)
 PAIO_MATCH_CALLBACK = ctypes.WINFUNCTYPE(None,
-                                       ctypes.c_short,  ctypes.wintypes.WPARAM,
-                                       ctypes.wintypes.LPARAM, ctypes.c_void_p)
+                                         ctypes.c_short,  ctypes.wintypes.WPARAM,
+                                         ctypes.wintypes.LPARAM, ctypes.c_void_p)
 PAIO_TIMEUP_CALLBACK = ctypes.WINFUNCTYPE(None,
-                                       ctypes.c_short,  ctypes.wintypes.WPARAM,
-                                       ctypes.wintypes.LPARAM, ctypes.c_void_p)
+                                          ctypes.c_short,  ctypes.wintypes.WPARAM,
+                                          ctypes.wintypes.LPARAM, ctypes.c_void_p)
 PAIO_COUNTER_ERR_CALLBACK = ctypes.WINFUNCTYPE(None,
-                                            ctypes.c_short,  ctypes.wintypes.WPARAM,
-                                            ctypes.wintypes.LPARAM, ctypes.c_void_p)
+                                               ctypes.c_short,  ctypes.wintypes.WPARAM,
+                                               ctypes.wintypes.LPARAM, ctypes.c_void_p)
 PAIO_CARRY_BORROW_CALLBACK = ctypes.WINFUNCTYPE(None,
-                                           ctypes.c_short,  ctypes.wintypes.WPARAM,
-                                           ctypes.wintypes.LPARAM, ctypes.c_void_p)
+                                                ctypes.c_short,  ctypes.wintypes.WPARAM,
+                                                ctypes.wintypes.LPARAM, ctypes.c_void_p)
 
 
-#----------------------------------------
+# ----------------------------------------
 # Prototype definition
-#----------------------------------------
-#----------------------------------------
+# ----------------------------------------
+# ----------------------------------------
 # Common function
-#----------------------------------------
+# ----------------------------------------
 # C Prototype: long WINAPI AioInit(char * DeviceName, short * Id);
 AioInit = caio_dll.AioInit
 AioInit.restype = ctypes.c_long
@@ -292,9 +292,9 @@ AioResetProcess = caio_dll.AioResetProcess
 AioResetProcess.restype = ctypes.c_long
 AioResetProcess.argtypes = [ctypes.c_short]
 
-#----------------------------------------
+# ----------------------------------------
 # Analog input function
-#----------------------------------------
+# ----------------------------------------
 # C Prototype: long WINAPI AioSingleAi(short Id, short AiChannel, long * AiData);
 AioSingleAi = caio_dll.AioSingleAi
 AioSingleAi.restype = ctypes.c_long
@@ -553,7 +553,8 @@ AioGetAiStartInRange.argtypes = [ctypes.c_short, ctypes.c_short, ctypes.POINTER(
 # C Prototype: long WINAPI AioGetAiStartInRangeEx(short Id, short AiChannel, float *Level1, float *Level2, long *StateTimes);
 AioGetAiStartInRangeEx = caio_dll.AioGetAiStartInRangeEx
 AioGetAiStartInRangeEx.restype = ctypes.c_long
-AioGetAiStartInRangeEx.argtypes = [ctypes.c_short, ctypes.c_short, ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_long)]
+AioGetAiStartInRangeEx.argtypes = [ctypes.c_short, ctypes.c_short, ctypes.POINTER(
+    ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_long)]
 
 # C Prototype: long WINAPI AioSetAiStartOutRange(short Id, short AiChannel, long Level1, long Level2, long StateTimes);
 AioSetAiStartOutRange = caio_dll.AioSetAiStartOutRange
@@ -573,7 +574,8 @@ AioGetAiStartOutRange.argtypes = [ctypes.c_short, ctypes.c_short, ctypes.POINTER
 # C Prototype: long WINAPI AioGetAiStartOutRangeEx(short Id, short AiChannel, float *Level1, float *Level2, long *StateTimes);
 AioGetAiStartOutRangeEx = caio_dll.AioGetAiStartOutRangeEx
 AioGetAiStartOutRangeEx.restype = ctypes.c_long
-AioGetAiStartOutRangeEx.argtypes = [ctypes.c_short, ctypes.c_short, ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_long)]
+AioGetAiStartOutRangeEx.argtypes = [ctypes.c_short, ctypes.c_short, ctypes.POINTER(
+    ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_long)]
 
 # C Prototype: long WINAPI AioSetAiStopTrigger(short Id, short AiStopTrigger);
 AioSetAiStopTrigger = caio_dll.AioSetAiStopTrigger
@@ -653,7 +655,8 @@ AioGetAiStopOutRange.argtypes = [ctypes.c_short, ctypes.c_short, ctypes.POINTER(
 # C Prototype: long WINAPI AioGetAiStopOutRangeEx(short Id, short AiChannel, float *Level1, float *Level2, long *StateTimes);
 AioGetAiStopOutRangeEx = caio_dll.AioGetAiStopOutRangeEx
 AioGetAiStopOutRangeEx.restype = ctypes.c_long
-AioGetAiStopOutRangeEx.argtypes = [ctypes.c_short, ctypes.c_short, ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_long)]
+AioGetAiStopOutRangeEx.argtypes = [ctypes.c_short, ctypes.c_short, ctypes.POINTER(
+    ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_long)]
 
 # C Prototype: long WINAPI AioSetAiStopDelayTimes(short Id, long AiStopDelayTimes);
 AioSetAiStopDelayTimes = caio_dll.AioSetAiStopDelayTimes
@@ -781,9 +784,9 @@ AioGetAiDigitalFilter = caio_dll.AioGetAiDigitalFilter
 AioGetAiDigitalFilter.restype = ctypes.c_long
 AioGetAiDigitalFilter.argtypes = [ctypes.c_short, ctypes.c_short, ctypes.POINTER(ctypes.c_short), ctypes.POINTER(ctypes.c_short)]
 
-#----------------------------------------
+# ----------------------------------------
 # Analog output function
-#----------------------------------------
+# ----------------------------------------
 # C Prototype: long WINAPI AioSingleAo(short Id, short AoChannel, long AoData);
 AioSingleAo = caio_dll.AioSingleAo
 AioSingleAo.restype = ctypes.c_long
@@ -1056,9 +1059,9 @@ AioResetAoMemory.restype = ctypes.c_long
 AioResetAoMemory.argtypes = [ctypes.c_short]
 
 
-#----------------------------------------
+# ----------------------------------------
 # Digital input and output function
-#----------------------------------------
+# ----------------------------------------
 # C Prototype: long WINAPI AioSetDiFilter(short Id, short Bit, float Value);
 AioSetDiFilter = caio_dll.AioSetDiFilter
 AioSetDiFilter.restype = ctypes.c_long
@@ -1100,9 +1103,9 @@ AioGetDioDirection.restype = ctypes.c_long
 AioGetDioDirection.argtypes = [ctypes.c_short, ctypes.POINTER(ctypes.c_long)]
 
 
-#----------------------------------------
+# ----------------------------------------
 # Counter function
-#----------------------------------------
+# ----------------------------------------
 # C Prototype: long WINAPI AioGetCntMaxChannels(short Id, short * CntMaxChannels);
 AioGetCntMaxChannels = caio_dll.AioGetCntMaxChannels
 AioGetCntMaxChannels.restype = ctypes.c_long
@@ -1195,9 +1198,9 @@ AioResetCntStatus.restype = ctypes.c_long
 AioResetCntStatus.argtypes = [ctypes.c_short, ctypes.c_short, ctypes.c_long]
 
 
-#----------------------------------------
+# ----------------------------------------
 # Timer function
-#----------------------------------------
+# ----------------------------------------
 # C Prototype: long WINAPI AioSetTmEvent(short Id, short TimerId, HWND hWnd, long TmEvent);
 AioSetTmEvent = caio_dll.AioSetTmEvent
 AioSetTmEvent.restype = ctypes.c_long
@@ -1250,9 +1253,9 @@ AioTmWait.restype = ctypes.c_long
 AioTmWait.argtypes = [ctypes.c_short, ctypes.c_short, ctypes.c_long]
 
 
-#----------------------------------------
+# ----------------------------------------
 # Event Controller
-#----------------------------------------
+# ----------------------------------------
 # C Prototype: long WINAPI AioSetEcuSignal(short Id, short Destination, short Source);
 AioSetEcuSignal = caio_dll.AioSetEcuSignal
 AioSetEcuSignal.restype = ctypes.c_long
@@ -1496,4 +1499,3 @@ AioCntmOutputDOBit = caio_dll.AioCntmOutputDOBit
 AioCntmOutputDOBit.restype = ctypes.c_long
 AioCntmOutputDOBit.argtypes = [ctypes.c_short, ctypes.c_short, ctypes.c_short, ctypes.c_ubyte]
 """
-

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # ================================================================
 # ================================================================
 # API-AIO(WDM)
@@ -230,29 +231,29 @@ if lret.value != 0:
 #     # now = time()
 try:
     while True:
-            lret.value = caio.AioGetAiSamplingCount(aio_id, AiSamplingCount)
+        lret.value = caio.AioGetAiSamplingCount(aio_id, AiSamplingCount)
+        if lret.value != 0:
+            caio.AioGetErrorString(lret, err_str)
+            print(f"AioGetAiSamplingCount = {lret.value} : {err_str.value.decode('sjis')}")
+            caio.AioExit(aio_id)
+            sys.exit()
+
+        print(AiSamplingCount.value)
+        if AiSamplingCount.value >= AiSamplingTimes:
+            cnt += AiSamplingTimes
+            lret.value = caio.AioGetAiSamplingDataEx(aio_id, ctypes.c_long(AiSamplingTimes), AiData)
             if lret.value != 0:
                 caio.AioGetErrorString(lret, err_str)
-                print(f"AioGetAiSamplingCount = {lret.value} : {err_str.value.decode('sjis')}")
+                print(f"AioMultiAiEx = {lret.value} : {err_str.value.decode('sjis')}")
                 caio.AioExit(aio_id)
                 sys.exit()
-
-            print(AiSamplingCount.value)
-            if AiSamplingCount.value >= AiSamplingTimes:
-                cnt += AiSamplingTimes
-                lret.value = caio.AioGetAiSamplingDataEx(aio_id, ctypes.c_long(AiSamplingTimes), AiData)
-                if lret.value != 0:
-                    caio.AioGetErrorString(lret, err_str)
-                    print(f"AioMultiAiEx = {lret.value} : {err_str.value.decode('sjis')}")
-                    caio.AioExit(aio_id)
-                    sys.exit()
-                # for i in range(AiChannels):
-                    # print(AiData[i::AiChannels])
-                    # print(len(V[i]))
-                    # npAiData = np.array(AiData)
-                    # V[i] = np.append(V[i], npAiData[i::AiChannels])
-                    # curves[i].setData(V[i][max(0, cnt - TIMERANGE):])
-                    # curves[i].setData(V[i])
+            # for i in range(AiChannels):
+                # print(AiData[i::AiChannels])
+                # print(len(V[i]))
+                # npAiData = np.array(AiData)
+                # V[i] = np.append(V[i], npAiData[i::AiChannels])
+                # curves[i].setData(V[i][max(0, cnt - TIMERANGE):])
+                # curves[i].setData(V[i])
 
         # cnt += 1
         # if cnt % 10 == 0:
@@ -279,7 +280,6 @@ except KeyboardInterrupt:
         print(f"AioExit = {lret.value} : {err_str.value.decode('sjis')}")
         sys.exit()
     sys.exit()
-
 
 
 # try:
