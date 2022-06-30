@@ -14,7 +14,7 @@ faulthandler.enable()
 
 from src import AIO_160802GY_USB
 
-AIO = AIO_160802GY_USB.AIO_160802GY_USB("AIO001",6)
+AIO = AIO_160802GY_USB.AIO_160802GY_USB("AIO000",6)
 V = [np.empty(0) for i in range(AIO.AiChannels)]
 
 AIO.AioStartAi()
