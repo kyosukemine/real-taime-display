@@ -42,14 +42,14 @@ class AIO_160802GY_USB():
         self.AiSamplingCount = ctypes.c_long(0)
         self.MaxAiChannels = ctypes.c_short()                # 最大チャネル数
         self.AiSamplingClock = 1000  # μsec
-        self.AiSamplingTimes = 100
+        self.MaxAiSamplingTimes = 1000
         self.AiChannels = AiChannels
         self.P = []
         self.curves = []
         self.T = np.empty(0)
         self.V = []
         self.cnt = int()
-        AiDataType = ctypes.c_float * (self.AiSamplingTimes*self.AiChannels)               # 配列タイプを作成(変換データ)
+        AiDataType = ctypes.c_float * (self.MaxAiSamplingTimes*self.AiChannels)               # 配列タイプを作成(変換データ)
         self.AiData = AiDataType()                            # 変換データ
         # ----------------------------------------
         #               デバイスの初期化
@@ -114,10 +114,11 @@ class AIO_160802GY_USB():
         _AiSamplingCount = self.AiSamplingCount.value
         return _AiSamplingCount
 
-    def AioGetAiSamplingDataEx(self):
-        caio.AioGetAiSamplingDataEx(self.aio_id, ctypes.c_long(self.AiSamplingTimes), self.AiData)
+    def AioGetAiSamplingDataEx(self, _AiSamplingCount):
+        _AiSamplingTimes = min(self.MaxAiSamplingTimes, _AiSamplingCount)
+        caio.AioGetAiSamplingDataEx(self.aio_id, ctypes.c_long(_AiSamplingTimes), self.AiData)
         _AiData = self.AiData
-        return _AiData
+        return _AiData, _AiSamplingTimes
 
     def AioStartAi(self):
         # ----------------------------------------

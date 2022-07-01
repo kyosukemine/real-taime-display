@@ -17,13 +17,11 @@ from pyqtgraph.Qt import QtCore
 from time import time
 from src import AIO_160802GY_USB
 import threading
-# ================================================================
-# 文字列を数値に変換できるかどうか確認する関数
-# ================================================================
+
 
 class main():
     def __init__(self):
-        self.AIO = AIO_160802GY_USB.AIO_160802GY_USB("AIO000", 2)
+        self.AIO = AIO_160802GY_USB.AIO_160802GY_USB("AIO000", AiChannels=2)
         self.V = [np.empty(0) for i in range(self.AIO.AiChannels)]
         P = []
         self.curves = []
@@ -68,26 +66,26 @@ class main():
         # サンプリングスタート
         # ----------------------------------------
         self.AIO.AioStartAi()
+        update_thread = threading.Thread(target=self.update, name='update')
+        fft_thread = threading.Thread(target=self.fft, name='fft')
+        update_thread.start()
+        fft_thread.start()
         try:
-            update_thread = threading.Thread(target=self.update, name='update')
-            fft_thread = threading.Thread(target=self.fft, name='fft')
-            update_thread.start()
-            fft_thread.start()
-
             while self.win.isVisible():
-                self.AiSamplingCount = self.AIO.AioGetAiSamplingCount()
-                print(self.AiSamplingCount)
-                # print(self.AIO.AiSamplingTimes)
-                # print("\033[3A")
                 if self.frg:
                     self.app.processEvents()
                     self.frg = False
-
                 pass
+            self.AiSamplingCount = self.AIO.AioGetAiSamplingCount()
+            AiData, _AiSamplingTimes = self.AIO.AioGetAiSamplingDataEx(self.AiSamplingCount)
+            self.cnt += _AiSamplingTimes
+            for i in range(self.AIO.AiChannels):
+                npAiData = np.array(AiData)
+                self.V[i] = np.append(self.V[i], npAiData[i:_AiSamplingTimes*self.AIO.AiChannels:self.AIO.AiChannels])
             # ----------------------------------------
             # デバイスの終了
             # ----------------------------------------
-            V = np.array(V).T
+            V = np.array(self.V).T
             V = np.vstack([[i for i in range(1, self.AIO.AiChannels+1)], V])
             np.savetxt('./np_savetxt.csv', V, delimiter=',', fmt='%f')
 
@@ -98,6 +96,12 @@ class main():
             self.AIO.AioExit()
             sys.exit()
         except KeyboardInterrupt:
+            self.AiSamplingCount = self.AIO.AioGetAiSamplingCount()
+            AiData, _AiSamplingTimes = self.AIO.AioGetAiSamplingDataEx(self.AiSamplingCount)
+            self.cnt += _AiSamplingTimes
+            for i in range(self.AIO.AiChannels):
+                npAiData = np.array(AiData)
+                self.V[i] = np.append(self.V[i], npAiData[i:_AiSamplingTimes*self.AIO.AiChannels:self.AIO.AiChannels])
             V = np.array(self.V).T
             V = np.vstack([[i for i in range(1, self.AIO.AiChannels+1)], V])
             np.savetxt('./np_savetxt.csv', V, delimiter=',', fmt='%f')
@@ -110,17 +114,21 @@ class main():
 
     def update(self):
         while self.win.isVisible():
-            if self.AiSamplingCount >= self.AIO.AiSamplingTimes:
-                self.AiSamplingCount -= self.AIO.AiSamplingTimes
-                self.cnt += self.AIO.AiSamplingTimes
-                AiData = self.AIO.AioGetAiSamplingDataEx()
+            self.AiSamplingCount = self.AIO.AioGetAiSamplingCount()
+            # print(self.AiSamplingCount)
+            if self.AiSamplingCount >= self.AIO.MaxAiSamplingTimes//10:
+                # self.AiSamplingCount -= self.AIO.AiSamplingTimes
+                AiData, _AiSamplingTimes = self.AIO.AioGetAiSamplingDataEx(self.AiSamplingCount)
+                print(_AiSamplingTimes)
+                self.cnt += _AiSamplingTimes
                 # print("!!!!!!!!!!")
 
                 for i in range(self.AIO.AiChannels):
                     npAiData = np.array(AiData)
-                    self.V[i] = np.append(self.V[i], npAiData[i::self.AIO.AiChannels])
+                    self.V[i] = np.append(self.V[i], npAiData[i:_AiSamplingTimes*self.AIO.AiChannels:self.AIO.AiChannels])
                     self.curves[i].setData(self.V[i][max(0, self.cnt - self.TIMERANGE):])
                     # curves[i].setData(self.V[i])
+                # print(len(self.V[0]))
                 self.frg = True
                 
                 # ptr += 1
@@ -132,6 +140,7 @@ class main():
                 
                 # print(11111111111111)
                 np.fft.fft(self.V[0][0:1024])
+                pass
             except:
                 pass
         #     print("-", end='')

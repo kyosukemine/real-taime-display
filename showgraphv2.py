@@ -1,33 +1,49 @@
-# ================================================================
-# ================================================================
-# API-AIO(WDM)
-# MultiAiサンプル
-#                                                CONTEC Co., Ltd.
-# ================================================================
-# ================================================================
+
 # import matplotlib.pyplot as plt
 import ctypes
 import ctypes.wintypes
 import sys
-# import caio
 # import keyboard
 import numpy as np
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore
-import time 
+import time
 from src import AIO_160802GY_USB
 import threading
+from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QTabWidget
+from PyQt6.QtCore import Qt
+
+
+class GuiWindow(QWidget):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setGeometry(0, 0, 250, 250)
+        self.build_ui()
+        self.set_alignment()
+
+    def build_ui(self):
+        self.qlb = QLabel('label', self)
+        self.qlb.setGeometry(25, 25, 200, 200)
+        self.qlb.setStyleSheet("border: 1px solid black;")
+
+    def set_alignment(self):
+        self.qlb.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+    def setLabel(self, label):
+        self.qlb.setText(label)
+
 
 class main():
     def __init__(self):
-        self.AIO = AIO_160802GY_USB.AIO_160802GY_USB("AIO000",6)
+        self.AIO = AIO_160802GY_USB.AIO_160802GY_USB("AIO000", AiChannels=2)
         self.V = [np.empty(0) for i in range(self.AIO.AiChannels)]
-        self.cnt = 0
         P = []
-        curves = []
+        self.curves = []
         self.T = np.empty(0)
         # self.V = []
         self.cnt = int()
+        self.AiSamplingCount = 0
 
         # ----------------------------------------
         # グラフウィンドウ作成
@@ -35,65 +51,65 @@ class main():
         pg.setConfigOption('background', 'w')
         pg.setConfigOption('foreground', 'k')
 
-        app = pg.mkQApp("Plotting Example")
+        self.app = pg.mkQApp("Plotting Example")
+
         # mw = QtWidgets.QMainWindow()
         # mw.resize(800,800)
 
-        win = pg.GraphicsLayoutWidget(show=True, title="Basic plotting examples")
-        win.resize(1000, 600)
-        win.setWindowTitle('pyqtgraph example: Plotting')
+        self.win = pg.GraphicsLayoutWidget(
+            parent=None, show=True, title="Basic plotting examples")
+        self.win.resize(1000, 600)
+        self.win.setWindowTitle('pyqtgraph example: Plotting')
+
+        # label
+        self.window = GuiWindow()
+        self.window.show()
 
         # Enable antialiasing for prettier plots
         pg.setConfigOptions(antialias=True)
 
         for i in range(self.AIO.AiChannels):
-            p = win.addPlot(title=f"[{i}]real-time plot")
-            curve = p.plot(pen='black')
-            curve.setData([i for i in range(100)])
+            p = self.win.addPlot(title=f"[{i}]real-time plot")
+            self.curve = p.plot(pen='black')
             p.setRange(yRange=(-2, 2))
             P.append(p)
-            curves.append(curve)
-            win.nextRow()
-        # pg.exec()
-        app.processEvents()
-        # time.sleep(1000)
-
-        TIMERANGE = 10 * 1000
+            self.curves.append(self.curve)
+            self.win.nextRow()
+        self.app.processEvents()
+        self.TIMERANGE = 1 * 1000
         cnt = 0
         V = [np.empty(0) for i in range(self.AIO.AiChannels)]
+        self.frg = False
 
         ptr = 0
-
+        # ----------------------------------------
+        # サンプリングスタート
+        # ----------------------------------------
         self.AIO.AioStartAi()
+        update_thread = threading.Thread(target=self.update, name='update')
+        fft_thread = threading.Thread(target=self.fft, name='fft')
+        update_thread.start()
+        fft_thread.start()
         try:
-            while True:
-                AiSamplingCount = self.AIO.AioGetAiSamplingCount()
-                print(AiSamplingCount)
-                # print(self.AIO.AiSamplingTimes)
-                # print("\033[3A")
-                if AiSamplingCount >= self.AIO.AiSamplingTimes:
-                    self.cnt += self.AIO.AiSamplingTimes
-                    AiData = self.AIO.AioGetAiSamplingDataEx()
-
-                    for i in range(self.AIO.AiChannels):
-                        npAiData = np.array(AiData)
-                        self.V[i] = np.append(self.V[i], npAiData[i::self.AIO.AiChannels])
-                        curves[i].setData(self.V[i][max(0, self.cnt - TIMERANGE):])
-                        # curves[i].setData(self.V[i])
-                        app.processEvents()
-
-                # self.cnt += 1
-                # if self.cnt % 10 ==threading.Thread 0:
-                #     print(self.cnt)
-                # print(len(self.V[0]))
-                # P[0].setTitle((now-old)*1000)
-                # caio.AioExit(aio_id)
-                # sys.exit()
-                # old = now
-        except KeyboardInterrupt:
-            self.V = np.array(self.V).T
-            self.V = np.vstack([[i for i in range(1,self.AIO.AiChannels+1)], self.V])
-            np.savetxt('./np_savetxt.csv', self.V, delimiter=',', fmt='%f')
+            while self.win.isVisible():
+                if self.frg:
+                    self.app.processEvents()
+                    self.frg = False
+                pass
+            self.AiSamplingCount = self.AIO.AioGetAiSamplingCount()
+            AiData, _AiSamplingTimes = self.AIO.AioGetAiSamplingDataEx(
+                self.AiSamplingCount)
+            self.cnt += _AiSamplingTimes
+            for i in range(self.AIO.AiChannels):
+                npAiData = np.array(AiData)
+                self.V[i] = np.append(
+                    self.V[i], npAiData[i:_AiSamplingTimes*self.AIO.AiChannels:self.AIO.AiChannels])
+            # ----------------------------------------
+            # デバイスの終了
+            # ----------------------------------------
+            V = np.array(self.V).T
+            V = np.vstack([[i for i in range(1, self.AIO.AiChannels+1)], V])
+            np.savetxt('./np_savetxt.csv', V, delimiter=',', fmt='%f')
 
             # ----------------------------------------
             # デバイスの終了
@@ -101,5 +117,62 @@ class main():
             self.AIO.AioStopAi()
             self.AIO.AioExit()
             sys.exit()
+        except KeyboardInterrupt:
+            self.AiSamplingCount = self.AIO.AioGetAiSamplingCount()
+            AiData, _AiSamplingTimes = self.AIO.AioGetAiSamplingDataEx(
+                self.AiSamplingCount)
+            self.cnt += _AiSamplingTimes
+            for i in range(self.AIO.AiChannels):
+                npAiData = np.array(AiData)
+                self.V[i] = np.append(
+                    self.V[i], npAiData[i:_AiSamplingTimes*self.AIO.AiChannels:self.AIO.AiChannels])
+            V = np.array(self.V).T
+            V = np.vstack([[i for i in range(1, self.AIO.AiChannels+1)], V])
+            np.savetxt('./np_savetxt.csv', V, delimiter=',', fmt='%f')
+            # ----------------------------------------
+            # デバイスの終了
+            # ----------------------------------------
+            self.AIO.AioStopAi()
+            self.AIO.AioExit()
+            sys.exit()
 
-main()
+    def update(self):
+        while self.win.isVisible():
+            self.AiSamplingCount = self.AIO.AioGetAiSamplingCount()
+            # print(self.AiSamplingCount)
+            if self.AiSamplingCount >= self.AIO.MaxAiSamplingTimes//10:
+                # self.AiSamplingCount -= self.AIO.AiSamplingTimes
+                AiData, _AiSamplingTimes = self.AIO.AioGetAiSamplingDataEx(
+                    self.AiSamplingCount)
+                print(_AiSamplingTimes)
+                self.cnt += _AiSamplingTimes
+                # print("!!!!!!!!!!")
+
+                for i in range(self.AIO.AiChannels):
+                    npAiData = np.array(AiData)
+                    self.V[i] = np.append(
+                        self.V[i], npAiData[i:_AiSamplingTimes*self.AIO.AiChannels:self.AIO.AiChannels])
+                    self.curves[i].setData(
+                        self.V[i][max(0, self.cnt - self.TIMERANGE):])
+                    # curves[i].setData(self.V[i])
+                # print(len(self.V[0]))
+                self.frg = True
+
+                # ptr += 1
+            pass
+
+    def fft(self):
+        while self.window.isVisible():
+            try:
+
+                # print(11111111111111)
+                np.fft.fft(self.V[0][0:1024])
+                self.window.setLabel(str(time.time()))
+            except:
+                pass
+        #     print("-", end='')
+        pass
+
+
+if __name__ == '__main__':
+    m = main()
