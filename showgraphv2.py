@@ -162,7 +162,7 @@ class main():
             pass
 
     def fft(self):
-        while self.window.isVisible():
+        while self.win.isVisible():
             try:
 
                 # print(11111111111111)
